@@ -23,6 +23,7 @@ from typing import Dict, List, Any, Optional
 from dotenv import load_dotenv
 from exa_py import Exa
 from exa_py.websets.types import CreateWebsetParameters, CreateEnrichmentParameters
+from src.utils.excel_export import json_to_excel
 
 # Default timeout for waiting for Webset processing (in seconds)
 TIMEOUT = 300  # 5 minutes
@@ -348,9 +349,19 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
                         json_result[key] = value
                 json_results.append(json_result)
 
+            # Save to JSON file
+            json_data = {"results": json_results}
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump({"results": json_results}, f, indent=2)
+                json.dump(json_data, f, indent=2)
             print(f"\nResults saved to {output_file}")
+
+            # Save to Excel file
+            try:
+                excel_file = json_to_excel(json_data, output_file)
+                if excel_file:
+                    print(f"Results also saved to Excel file: {excel_file}")
+            except Exception as e:
+                print(f"Error saving results to Excel file: {e}")
         except Exception as e:
             print(f"Error saving results to file: {e}")
 
