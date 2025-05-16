@@ -374,7 +374,9 @@ def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = 
     # Save raw data to file if requested
     if output_file:
         try:
-            raw_output_file = f"raw_{output_file}"
+            # Extract filename from path
+            output_filename = os.path.basename(output_file)
+            raw_output_file = f"../results/raw_{output_filename}"
             with open(raw_output_file, 'w', encoding='utf-8') as f:
                 # Use a custom JSON encoder to handle non-serializable objects
                 class CustomEncoder(json.JSONEncoder):
@@ -394,8 +396,8 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Check Exa Webset status and retrieve items")
     parser.add_argument("--webset-id", required=True, help="ID of the Webset to check")
-    parser.add_argument("--config", type=str, default="config.json", help="Path to configuration file")
-    parser.add_argument("--output", "-o", type=str, help="Output file to save results to")
+    parser.add_argument("--config", type=str, default="../config/config.json", help="Path to configuration file")
+    parser.add_argument("--output", "-o", type=str, default="../results/webset_check_results.json", help="Output file to save results to")
     parser.add_argument("--raw", action="store_true", help="Inspect and save raw item data")
     args = parser.parse_args()
 

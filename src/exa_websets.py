@@ -358,8 +358,8 @@ def main():
     """Main function to execute the script."""
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Fetch and display Exa Websets data")
-    parser.add_argument("--config", type=str, default="config.json", help="Path to configuration file")
-    parser.add_argument("--output", "-o", type=str, help="Output file to save results to")
+    parser.add_argument("--config", type=str, default="../config/config.json", help="Path to configuration file")
+    parser.add_argument("--output", "-o", type=str, default="../results/webset_results.json", help="Output file to save results to")
     parser.add_argument("--webset-id", type=str, help="Use existing Webset ID instead of creating a new one")
     args = parser.parse_args()
 

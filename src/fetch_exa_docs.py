@@ -16,14 +16,14 @@ urls = [
 ]
 
 # Output file
-output_file = "documentation.md"
+output_file = "../documentation.md"
 
 def fetch_content(url):
     """Fetch content from a URL"""
     try:
         response = requests.get(url)
         response.raise_for_status()  # Raise an exception for HTTP errors
-        
+
         # Check if the URL ends with .md, which means we're directly fetching a markdown file
         if url.endswith('.md'):
             return response.text
@@ -40,22 +40,22 @@ def fetch_content(url):
 def main():
     """Main function to fetch all content and write to file"""
     all_content = []
-    
+
     print("Fetching content from URLs...")
     for url in urls:
         print(f"Processing: {url}")
         content = fetch_content(url)
-        
+
         # Add a header with the source URL
         url_header = f"\n\n## Source: {url}\n\n"
         all_content.append(url_header + content)
-    
+
     # Write all content to the output file
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write("# Exa.ai Websets API Documentation\n\n")
         f.write("*This document is a compilation of documentation from various Exa.ai Websets API pages.*\n\n")
         f.write("".join(all_content))
-    
+
     print(f"\nDocumentation compiled successfully to {output_file}")
 
 if __name__ == "__main__":

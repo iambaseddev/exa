@@ -2,40 +2,48 @@
 
 This repository contains scripts for working with the Exa API to search for information and process the results. It includes scripts for both the Exa Search API and the Exa Websets API.
 
+## Project Structure
+
+- `src/` - Python source code files
+- `config/` - Configuration files
+- `results/` - Output files and results
+- `documentation.md` - Detailed API documentation
+- `README.md` - This file
+
 ## Scripts
 
-### 1. exa_websets.py
+### 1. src/exa_websets.py
 
 This script creates a new Webset with the specified search criteria and enrichments, waits for it to process, and then retrieves and formats the results.
 
 #### Usage
 
 ```bash
-python exa_websets.py [--config config.json] [--output results.json] [--webset-id WEBSET_ID]
+python src/exa_websets.py [--config config/config.json] [--output results/webset_results.json] [--webset-id WEBSET_ID]
 ```
 
 Options:
-- `--config`: Path to the configuration file (default: config.json)
-- `--output`: Output file to save results to
+- `--config`: Path to the configuration file (default: config/config.json)
+- `--output`: Output file to save results to (default: results/webset_results.json)
 - `--webset-id`: Use an existing Webset ID instead of creating a new one
 
-### 2. check_webset.py
+### 2. src/check_webset.py
 
 This script checks the status of an existing Webset and retrieves its items if the Webset is idle.
 
 #### Usage
 
 ```bash
-python check_webset.py --webset-id WEBSET_ID [--output results.json] [--raw]
+python src/check_webset.py --webset-id WEBSET_ID [--output results/webset_check_results.json] [--raw]
 ```
 
 Options:
 - `--webset-id`: ID of the Webset to check (required)
-- `--config`: Path to the configuration file (default: config.json)
-- `--output`: Output file to save results to
+- `--config`: Path to the configuration file (default: config/config.json)
+- `--output`: Output file to save results to (default: results/webset_check_results.json)
 - `--raw`: Inspect and save raw item data
 
-### 3. exa_search.py
+### 3. src/exa_search.py
 
 This script uses the Exa Search API to search for information and display the results in a formatted way.
 
@@ -74,75 +82,75 @@ This script uses the Exa Search API to search for information and display the re
 
 ## Usage
 
-### exa_search.py
+### src/exa_search.py
 
 Basic usage:
 ```
-python exa_search.py
+python src/exa_search.py
 ```
 
 This will perform a search using the default query: "Top AI research labs focusing on large language models"
 
 Command-line Options:
 - `--query "Your search query"`: Specify a custom search query
-- `--output filename.txt` or `-o filename.txt`: Save the results to a file
+- `--output filename.txt` or `-o filename.txt`: Save the results to a file (default: results/search_results.txt)
 - `--limit N` or `-l N`: Limit the number of results (default: 3)
 
 Examples:
 ```
 # Custom search query
-python exa_search.py --query "Best machine learning frameworks 2025"
+python src/exa_search.py --query "Best machine learning frameworks 2025"
 
 # Save results to a file
-python exa_search.py --output results.txt
+python src/exa_search.py --output results/custom_search_results.txt
 
 # Limit to 5 results
-python exa_search.py --limit 5
+python src/exa_search.py --limit 5
 
 # Combine options
-python exa_search.py --query "AI startups in healthcare" --output healthcare_ai.txt --limit 10
+python src/exa_search.py --query "AI startups in healthcare" --output results/healthcare_ai.txt --limit 10
 ```
 
-### exa_websets.py
+### src/exa_websets.py
 
 Basic usage:
 ```
-python exa_websets.py
+python src/exa_websets.py
 ```
 
-This will create a new Webset with the search criteria and enrichments specified in config.json.
+This will create a new Webset with the search criteria and enrichments specified in config/config.json.
 
 Examples:
 ```
 # Use an existing Webset
-python exa_websets.py --webset-id webset_cmaqrbpy900b5mk0ialbn5z07
+python src/exa_websets.py --webset-id webset_cmaqrbpy900b5mk0ialbn5z07
 
 # Save results to a file
-python exa_websets.py --output entrepreneur_results.json
+python src/exa_websets.py --output results/entrepreneur_results.json
 
 # Use a custom config file
-python exa_websets.py --config custom_config.json
+python src/exa_websets.py --config config/custom_config.json
 ```
 
-### check_webset.py
+### src/check_webset.py
 
 Basic usage:
 ```
-python check_webset.py --webset-id webset_cmaqrbpy900b5mk0ialbn5z07
+python src/check_webset.py --webset-id webset_cmaqrbpy900b5mk0ialbn5z07
 ```
 
 Examples:
 ```
 # Save results to a file
-python check_webset.py --webset-id webset_cmaqrbpy900b5mk0ialbn5z07 --output results.json
+python src/check_webset.py --webset-id webset_cmaqrbpy900b5mk0ialbn5z07 --output results/webset_check_results.json
 
 # Inspect raw item data
-python check_webset.py --webset-id webset_cmaqrbpy900b5mk0ialbn5z07 --raw
+python src/check_webset.py --webset-id webset_cmaqrbpy900b5mk0ialbn5z07 --raw
 ```
 
 ## Output Format
 
-### exa_search.py
+### src/exa_search.py
 
 The script displays search results with the following information (when available):
 
@@ -154,7 +162,7 @@ The script displays search results with the following information (when availabl
 - Relevance score
 - Text excerpt
 
-### exa_websets.py and check_webset.py
+### src/exa_websets.py and src/check_webset.py
 
 These scripts generate output in JSON format with the following structure:
 
@@ -184,7 +192,7 @@ These scripts generate output in JSON format with the following structure:
 
 ## Configuration
 
-The Websets scripts use a configuration file (`config.json`) to specify search criteria and enrichments:
+The Websets scripts use a configuration file (`config/config.json`) to specify search criteria and enrichments:
 
 ```json
 {

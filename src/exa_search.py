@@ -216,7 +216,7 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Fetch and display Exa Search API data")
     parser.add_argument("--query", type=str, help="Search query to use")
-    parser.add_argument("--output", "-o", type=str, help="Output file to save results to")
+    parser.add_argument("--output", "-o", type=str, default="../results/search_results.txt", help="Output file to save results to")
     parser.add_argument("--limit", "-l", type=int, default=MAX_ITEMS,
                         help=f"Maximum number of results to display (default: {MAX_ITEMS})")
     args = parser.parse_args()
