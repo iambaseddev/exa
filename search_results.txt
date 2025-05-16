@@ -1,0 +1,24 @@
+================================================================================
+DISPLAYING TOP 3 RESULTS FOR: Top AI research labs focusing on large language models
+================================================================================
+
+RESULT 1:
+Title: OpenAI
+URL: https://openai.com/
+Published: 2025-05-05T00:00:00.000Z
+Relevance Score: 0.44885164499282837
+--------------------------------------------------------------------------------
+
+RESULT 2:
+Title: Home \ Anthropic
+URL: https://www.anthropic.com/
+Published: 2025-03-27T00:00:00.000Z
+Relevance Score: 0.43636560440063477
+--------------------------------------------------------------------------------
+
+RESULT 3:
+Title: EleutherAI
+URL: https://www.eleuther.ai/
+Published: 2024-02-12T00:00:00.000Z
+Relevance Score: 0.4390915036201477
+--------------------------------------------------------------------------------

@@ -1,0 +1,40 @@
+{
+  "results": [
+    {
+      "id": "witem_01jvcj1fhwy2c68zxyy2c68zxy",
+      "source": "search",
+      "webset_id": "webset_cmaqsk393000tlq0icayjcwg0",
+      "url": "https://www.linkedin.com/in/jan-mccarthy-4872517",
+      "enrichments": {
+        "Company Name": "https://www.janmccarthy.com",
+        "Location": "Los Angeles, California",
+        "Name": "Entrepreneurial Voice",
+        "Email": "tkgcareofbusiness@gmail.com",
+        "Phone": "3039562712"
+      }
+    },
+    {
+      "id": "witem_01jvcj1ggy0mydqpj00mydqpj0",
+      "source": "search",
+      "webset_id": "webset_cmaqsk393000tlq0icayjcwg0",
+      "url": "https://www.linkedin.com/in/sheila-thorne-3867a576",
+      "enrichments": {
+        "Company Name": "https://www.woce.us",
+        "Name": "Women of Color Entrepreneur Directory",
+        "Location": "Palos Verdes Peninsula, California"
+      }
+    },
+    {
+      "id": "witem_01jvcj1hgj5vt3av555vt3av55",
+      "source": "search",
+      "webset_id": "webset_cmaqsk393000tlq0icayjcwg0",
+      "url": "https://www.linkedin.com/in/christiana-smith-35ab021b5",
+      "enrichments": {
+        "Company Name": "Cool Jewels",
+        "Name": "Christiana Smith",
+        "Email": "christianasmith@gmail.com",
+        "Location": "San Diego, California"
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "results": [
+    {
+      "id": "witem_01jvcg32bdreggpdvrreggpdvr",
+      "source": "search",
+      "webset_id": "webset_cmaqrbpy900b5mk0ialbn5z07",
+      "url": "https://www.linkedin.com/in/negocios-latinos",
+      "enrichments": {
+        "Phone": [
+          "+13127020116"
+        ],
+        "Location": [
+          "Greater Chicago Area, US"
+        ],
+        "Company Name": [
+          "Linea411"
+        ]
+      }
+    },
+    {
+      "id": "witem_01jvcg3c1s2fns5vb22fns5vb2",
+      "source": "search",
+      "webset_id": "webset_cmaqrbpy900b5mk0ialbn5z07",
+      "url": "https://www.linkedin.com/in/leonard-pineda-a9002318b",
+      "enrichments": {
+        "Name": [
+          "Leonard Pineda"
+        ]
+      }
+    },
+    {
+      "id": "witem_01jvcg3e404pk078v44pk078v4",
+      "source": "search",
+      "webset_id": "webset_cmaqrbpy900b5mk0ialbn5z07",
+      "url": "https://www.linkedin.com/in/john-smith-398599260",
+      "enrichments": {
+        "Company Name": [
+          "Executive Consulting LLC"
+        ],
+        "Name": [
+          "John Smith"
+        ],
+        "Email": [
+          "john@executivesconsulting.com"
+        ],
+        "Location": [
+          "United States"
+        ]
+      }
+    }
+  ]
+}

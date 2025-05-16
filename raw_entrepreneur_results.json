@@ -1,0 +1,20 @@
+[
+  {
+    "created_at": "2025-05-16 12:11:18.765000+00:00",
+    "enrichments": [
+      {
+        "enrichment_id": "wenrich_cmaqrbq3z00bbmk0ih8yzjyyr",
+        "format": "text",
+        "model_computed_fields": {},
+        "model_config": {
+          "populate_by_name": true,
+          "use_enum_values": true,
+          "coerce_numbers_to_str": false,
+          "str_strip_whitespace": true,
+          "str_to_lower": false,
+          "str_to_upper": false,
+          "from_attributes": true,
+          "validate_assignment": true,
+          "extra": "forbid",
+          "json_encoders": {
+            

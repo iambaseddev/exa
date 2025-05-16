@@ -1,0 +1,14 @@
+{
+    "search": {
+        "query": "female entrepreneur (founder, co-founder, or owner of a business) currently resides in the state of California",
+        "limit": 3
+    },
+    "enrichments": [
+        "Name",
+        "Email",
+        "Phone",
+        "Location",
+        "Company Name",
+        "Company Website"
+    ]
+}
