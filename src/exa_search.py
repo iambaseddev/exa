@@ -25,6 +25,7 @@ import argparse
 from typing import Dict, List, Any, Optional
 from dotenv import load_dotenv
 from exa_py import Exa
+from src.utils.excel_export import search_results_to_excel
 
 # Maximum number of items to display
 MAX_ITEMS = 3
@@ -203,9 +204,20 @@ def format_and_display_results(results: List[Dict[str, Any]], query: str, output
     # Save to file if requested
     if output_file:
         try:
+            # Save to text file
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(output_text)
             print(f"\nResults saved to {output_file}")
+
+            # Save to Excel file
+            try:
+                # Extract metadata for Excel export
+                excel_data = [extract_metadata(result) for result in results]
+                excel_file = search_results_to_excel(excel_data, query, output_file)
+                if excel_file:
+                    print(f"Results also saved to Excel file: {excel_file}")
+            except Exception as e:
+                print(f"Error saving results to Excel file: {e}")
         except Exception as e:
             print(f"Error saving results to file: {e}")
 

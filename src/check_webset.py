@@ -16,6 +16,7 @@ import argparse
 from typing import Dict, List, Any, Optional
 from dotenv import load_dotenv
 from exa_py import Exa
+from src.utils.excel_export import json_to_excel
 
 def load_config(config_file: str) -> Dict[str, Any]:
     """
@@ -298,9 +299,19 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
                     except:
                         return "Non-serializable object"
 
+            # Save to JSON file
+            json_data = {"results": formatted_results}
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump({"results": formatted_results}, f, indent=2, cls=CustomEncoder)
+                json.dump(json_data, f, indent=2, cls=CustomEncoder)
             print(f"\nResults saved to {output_file}")
+
+            # Save to Excel file
+            try:
+                excel_file = json_to_excel(json_data, output_file)
+                if excel_file:
+                    print(f"Results also saved to Excel file: {excel_file}")
+            except Exception as e:
+                print(f"Error saving results to Excel file: {e}")
         except Exception as e:
             print(f"Error saving results to file: {e}")
 

@@ -5,8 +5,10 @@ This repository contains scripts for working with the Exa API to search for info
 ## Project Structure
 
 - `src/` - Python source code files
+  - `utils/` - Utility modules including Excel export functionality
 - `config/` - Configuration files
-- `results/` - Output files and results
+- `results/` - Output files and results (JSON, text, and Excel formats)
+- `tests/` - Test files for the codebase
 - `documentation.md` - Detailed API documentation
 - `README.md` - This file
 
@@ -53,13 +55,16 @@ This script uses the Exa Search API to search for information and display the re
 - Perform searches with customizable queries
 - Limit the number of results displayed
 - Format and display search results with relevant metadata
-- Save results to a file
+- Save results to both JSON/text and Excel/Google Sheets formats
+- Handle missing fields gracefully by keeping them blank in the output
 
 ## Requirements
 
 - Python 3.6+
 - `exa-py` Python package
 - `python-dotenv` package
+- `pandas` package for data manipulation
+- `openpyxl` package for Excel file generation
 
 ## Installation
 
@@ -73,7 +78,7 @@ This script uses the Exa Search API to search for information and display the re
    - On macOS/Linux: `source venv/bin/activate`
 4. Install the required packages:
    ```
-   pip install exa-py python-dotenv
+   pip install -r requirements.txt
    ```
 5. Create a `.env` file in the root directory with your Exa API key:
    ```
@@ -162,9 +167,15 @@ The script displays search results with the following information (when availabl
 - Relevance score
 - Text excerpt
 
+Results are saved in two formats:
+1. Text file (.txt) - Human-readable formatted text
+2. Excel file (.xlsx) - Tabular data for analysis and processing
+
 ### src/exa_websets.py and src/check_webset.py
 
-These scripts generate output in JSON format with the following structure:
+These scripts generate output in two formats:
+
+1. JSON format with the following structure:
 
 ```json
 {
@@ -189,6 +200,8 @@ These scripts generate output in JSON format with the following structure:
   ]
 }
 ```
+
+2. Excel format (.xlsx) - Tabular data with the same information, suitable for analysis and processing in spreadsheet applications. Missing fields are kept blank rather than filled with null values.
 
 ## Configuration
 
@@ -224,6 +237,21 @@ The scripts include error handling for:
 
 - The Exa Websets API is asynchronous, so it may take some time for a Webset to process.
 - The enrichments may not always be able to extract all requested information for every result.
+
+## Running Tests
+
+The project includes tests to verify the functionality of the Excel export feature and integration with the main scripts. To run the tests:
+
+```bash
+pytest tests/
+```
+
+Or run specific test files:
+
+```bash
+pytest tests/test_excel_export.py
+pytest tests/test_integration.py
+```
 
 ## License
 
