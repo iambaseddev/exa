@@ -9,14 +9,17 @@ Usage:
     python check_webset.py --webset-id WEBSET_ID [--output OUTPUT_FILE]
 """
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from dotenv import load_dotenv
 from exa_py import Exa
+
 from src.utils.excel_export import json_to_excel
+
 
 def load_config(config_file: str) -> Dict[str, Any]:
     """
@@ -29,7 +32,7 @@ def load_config(config_file: str) -> Dict[str, Any]:
         Dict: Configuration data
     """
     try:
-        with open(config_file, 'r', encoding='utf-8') as f:
+        with open(config_file, "r", encoding="utf-8") as f:
             config = json.load(f)
         print(f"Configuration loaded from {config_file}")
         return config
@@ -43,9 +46,10 @@ def load_config(config_file: str) -> Dict[str, Any]:
                 "Phone",
                 "Location",
                 "Company Name",
-                "Company Website"
+                "Company Website",
             ]
         }
+
 
 def setup_exa_client() -> Optional[Exa]:
     """
@@ -58,7 +62,7 @@ def setup_exa_client() -> Optional[Exa]:
     load_dotenv()
 
     # Get API key from environment
-    api_key = os.getenv('exa_api_key')
+    api_key = os.getenv("exa_api_key")
 
     if not api_key:
         print("Error: No API key found. Please set 'exa_api_key' in your .env file.")
@@ -72,6 +76,7 @@ def setup_exa_client() -> Optional[Exa]:
     except Exception as e:
         print(f"Error initializing Exa client: {e}")
         return None
+
 
 def check_webset_status(exa_client: Exa, webset_id: str) -> Optional[Dict[str, Any]]:
     """
@@ -91,6 +96,7 @@ def check_webset_status(exa_client: Exa, webset_id: str) -> Optional[Dict[str, A
     except Exception as e:
         print(f"Error checking Webset status: {e}")
         return None
+
 
 def fetch_webset_items(exa_client: Exa, webset_id: str) -> Optional[List[Dict[str, Any]]]:
     """
@@ -117,7 +123,12 @@ def fetch_webset_items(exa_client: Exa, webset_id: str) -> Optional[List[Dict[st
         print(f"Error fetching Webset items: {e}")
         return None
 
-def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any], output_file: Optional[str] = None) -> None:
+
+def format_and_save_results(
+    items: List[Dict[str, Any]],
+    config: Dict[str, Any],
+    output_file: Optional[str] = None,
+) -> None:
     """
     Format and save Webset items with specific fields.
 
@@ -139,7 +150,7 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
             result = {
                 "id": item.id,
                 "source": item.source,
-                "webset_id": item.webset_id
+                "webset_id": item.webset_id,
             }
 
             # Extract properties based on item type
@@ -158,7 +169,13 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
                 print(f"\nEnrichment structure for item {item.id}:")
                 for i, enrichment in enumerate(item.enrichments):
                     print(f"  Enrichment {i+1}:")
-                    for attr in ["enrichment_id", "format", "result", "reasoning", "references"]:
+                    for attr in [
+                        "enrichment_id",
+                        "format",
+                        "result",
+                        "reasoning",
+                        "references",
+                    ]:
                         if hasattr(enrichment, attr):
                             value = getattr(enrichment, attr)
                             if attr == "result" and isinstance(value, list) and value:
@@ -172,7 +189,7 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
                     "wenrich_cmaqsapcr00ctl00iq4gpyqo6": "Phone",
                     "wenrich_cmaqsapcr00cul00i3l2dfhq7": "Location",
                     "wenrich_cmaqsapcr00cvl00i5p9iokr4": "Company Name",
-                    "wenrich_cmaqsapcr00cwl00ij7q5v78o": "Company Website"
+                    "wenrich_cmaqsapcr00cwl00ij7q5v78o": "Company Website",
                 }
 
                 # Map formats to field names as fallback
@@ -225,7 +242,11 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
                                 enrichments["Name"] = result_value
                             elif "location" in reasoning.lower() or "resides" in reasoning.lower():
                                 enrichments["Location"] = result_value
-                            elif "company" in reasoning.lower() or "business" in reasoning.lower() or "owner" in reasoning.lower():
+                            elif (
+                                "company" in reasoning.lower()
+                                or "business" in reasoning.lower()
+                                or "owner" in reasoning.lower()
+                            ):
                                 enrichments["Company Name"] = result_value
                             elif "website" in reasoning.lower() or "url" in reasoning.lower():
                                 enrichments["Company Website"] = result_value
@@ -248,15 +269,44 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
                                 enrichments["Email"] = result_value
                             elif "http" in result_str or ".com" in result_str or ".org" in result_str:
                                 enrichments["Company Website"] = result_value
-                            elif any(state in result_str for state in ["alabama", "alaska", "arizona", "california", "colorado", "florida", "georgia", "illinois", "new york", "texas", "washington", "united states", "usa"]):
+                            elif any(
+                                state in result_str
+                                for state in [
+                                    "alabama",
+                                    "alaska",
+                                    "arizona",
+                                    "california",
+                                    "colorado",
+                                    "florida",
+                                    "georgia",
+                                    "illinois",
+                                    "new york",
+                                    "texas",
+                                    "washington",
+                                    "united states",
+                                    "usa",
+                                ]
+                            ):
                                 enrichments["Location"] = result_value
-                            elif any(char.isdigit() for char in result_str) and ("-" in result_str or "(" in result_str or ")" in result_str):
+                            elif any(char.isdigit() for char in result_str) and (
+                                "-" in result_str or "(" in result_str or ")" in result_str
+                            ):
                                 enrichments["Phone"] = result_value
                             # Check if it looks like a name (capitalized words)
                             elif all(word[0].isupper() for word in result_value.split() if word):
                                 enrichments["Name"] = result_value
                             # Check if it looks like a company name (often has Inc, LLC, etc.)
-                            elif any(term in result_str for term in ["inc", "llc", "corp", "company", "technologies", "solutions"]):
+                            elif any(
+                                term in result_str
+                                for term in [
+                                    "inc",
+                                    "llc",
+                                    "corp",
+                                    "company",
+                                    "technologies",
+                                    "solutions",
+                                ]
+                            ):
                                 enrichments["Company Name"] = result_value
 
                 result["enrichments"] = enrichments
@@ -267,9 +317,9 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
             print(f"Error formatting item {item.id}: {e}")
 
     # Print formatted results
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print(f"FORMATTED RESULTS ({len(formatted_results)} items)")
-    print("="*80)
+    print("=" * 80)
 
     for i, result in enumerate(formatted_results, 1):
         print(f"\nRESULT {i}:")
@@ -286,7 +336,7 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
             for field, value in result["enrichments"].items():
                 print(f"  {field}: {value}")
 
-        print("-"*80)
+        print("-" * 80)
 
     # Save to file if requested
     if output_file:
@@ -301,7 +351,7 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
 
             # Save to JSON file
             json_data = {"results": formatted_results}
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(json_data, f, indent=2, cls=CustomEncoder)
             print(f"\nResults saved to {output_file}")
 
@@ -315,6 +365,7 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
         except Exception as e:
             print(f"Error saving results to file: {e}")
 
+
 def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = None) -> None:
     """
     Inspect and save the raw structure of Webset items.
@@ -327,9 +378,9 @@ def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = 
         print("No items to inspect.")
         return
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print(f"RAW ITEM INSPECTION ({len(items)} items)")
-    print("="*80)
+    print("=" * 80)
 
     raw_data = []
 
@@ -347,7 +398,9 @@ def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = 
             for j, enrichment in enumerate(item.enrichments, 1):
                 print(f"  Enrichment {j}:")
                 enrichment_attrs = dir(enrichment)
-                print(f"  Available attributes: {', '.join(attr for attr in enrichment_attrs if not attr.startswith('_'))}")
+                print(
+                    f"  Available attributes: {', '.join(attr for attr in enrichment_attrs if not attr.startswith('_'))}"
+                )
 
                 # Print enrichment details
                 if hasattr(enrichment, "result"):
@@ -358,7 +411,7 @@ def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = 
                     enrichment_dict = {
                         attr: getattr(enrichment, attr)
                         for attr in enrichment_attrs
-                        if not attr.startswith('_') and not callable(getattr(enrichment, attr))
+                        if not attr.startswith("_") and not callable(getattr(enrichment, attr))
                     }
                     print(f"  Data: {enrichment_dict}")
                 except Exception as e:
@@ -368,12 +421,12 @@ def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = 
         try:
             item_dict = {}
             for attr in attributes:
-                if not attr.startswith('_') and not callable(getattr(item, attr)):
+                if not attr.startswith("_") and not callable(getattr(item, attr)):
                     value = getattr(item, attr)
                     if attr == "enrichments":
                         # Handle enrichments separately
                         item_dict[attr] = [
-                            {a: getattr(e, a) for a in dir(e) if not a.startswith('_') and not callable(getattr(e, a))}
+                            {a: getattr(e, a) for a in dir(e) if not a.startswith("_") and not callable(getattr(e, a))}
                             for e in value
                         ]
                     else:
@@ -388,7 +441,7 @@ def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = 
             # Extract filename from path
             output_filename = os.path.basename(output_file)
             raw_output_file = f"../results/raw_{output_filename}"
-            with open(raw_output_file, 'w', encoding='utf-8') as f:
+            with open(raw_output_file, "w", encoding="utf-8") as f:
                 # Use a custom JSON encoder to handle non-serializable objects
                 class CustomEncoder(json.JSONEncoder):
                     def default(self, obj):
@@ -402,13 +455,25 @@ def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = 
         except Exception as e:
             print(f"Error saving raw data to file: {e}")
 
+
 def main():
     """Main function to execute the script."""
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Check Exa Webset status and retrieve items")
     parser.add_argument("--webset-id", required=True, help="ID of the Webset to check")
-    parser.add_argument("--config", type=str, default="../config/config.json", help="Path to configuration file")
-    parser.add_argument("--output", "-o", type=str, default="../results/webset_check_results.json", help="Output file to save results to")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="../config/config.json",
+        help="Path to configuration file",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default="../results/webset_check_results.json",
+        help="Output file to save results to",
+    )
     parser.add_argument("--raw", action="store_true", help="Inspect and save raw item data")
     args = parser.parse_args()
 
@@ -439,6 +504,7 @@ def main():
         format_and_save_results(items, config, args.output)
     else:
         print(f"Webset is not idle (current status: {webset.status}). Please check again later.")
+
 
 if __name__ == "__main__":
     main()
