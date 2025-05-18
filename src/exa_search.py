@@ -19,12 +19,14 @@ Usage:
     The script will perform a search and display the results.
 """
 
+import argparse
 import os
 import sys
-import argparse
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from dotenv import load_dotenv
 from exa_py import Exa
+
 from src.utils.excel_export import search_results_to_excel
 
 # Maximum number of items to display
@@ -35,6 +37,7 @@ DEFAULT_SEARCH_QUERY = "Top AI research labs focusing on large language models"
 
 # API base URL - can be modified if the API endpoint changes
 API_BASE_URL = "https://api.exa.ai"
+
 
 def setup_exa_client() -> Optional[Exa]:
     """
@@ -47,7 +50,7 @@ def setup_exa_client() -> Optional[Exa]:
     load_dotenv()
 
     # Get API key from environment
-    api_key = os.getenv('exa_api_key')
+    api_key = os.getenv("exa_api_key")
 
     if not api_key:
         print("Error: No API key found. Please set 'exa_api_key' in your .env file.")
@@ -66,6 +69,7 @@ def setup_exa_client() -> Optional[Exa]:
     except Exception as e:
         print(f"Error initializing Exa client: {e}")
         return None
+
 
 def perform_search(exa_client: Exa, query: str) -> Optional[List[Dict[str, Any]]]:
     """
@@ -105,6 +109,7 @@ def perform_search(exa_client: Exa, query: str) -> Optional[List[Dict[str, Any]]
         print(f"Error performing search: {e}")
         return None
 
+
 def extract_metadata(result) -> Dict[str, Any]:
     """
     Extract metadata from a search result.
@@ -136,6 +141,7 @@ def extract_metadata(result) -> Dict[str, Any]:
 
     return metadata
 
+
 def format_and_display_results(results: List[Dict[str, Any]], query: str, output_file: Optional[str] = None) -> None:
     """
     Format and display search results with specific fields.
@@ -151,9 +157,9 @@ def format_and_display_results(results: List[Dict[str, Any]], query: str, output
 
     # Prepare output lines
     output_lines = []
-    output_lines.append("="*80)
+    output_lines.append("=" * 80)
     output_lines.append(f"DISPLAYING TOP {len(results)} RESULTS FOR: {query}")
-    output_lines.append("="*80)
+    output_lines.append("=" * 80)
 
     for i, result in enumerate(results, 1):
         try:
@@ -190,10 +196,10 @@ def format_and_display_results(results: List[Dict[str, Any]], query: str, output
                     text = text[:max_length] + "..."
                 output_lines.append(f"\nExcerpt: {text}")
 
-            output_lines.append("-"*80)
+            output_lines.append("-" * 80)
         except Exception as e:
             output_lines.append(f"Error displaying result {i}: {e}")
-            output_lines.append("-"*80)
+            output_lines.append("-" * 80)
 
     # Join all lines
     output_text = "\n".join(output_lines)
@@ -205,7 +211,7 @@ def format_and_display_results(results: List[Dict[str, Any]], query: str, output
     if output_file:
         try:
             # Save to text file
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(output_text)
             print(f"\nResults saved to {output_file}")
 
@@ -221,6 +227,7 @@ def format_and_display_results(results: List[Dict[str, Any]], query: str, output
         except Exception as e:
             print(f"Error saving results to file: {e}")
 
+
 def main():
     """Main function to execute the script."""
     global MAX_ITEMS
@@ -228,9 +235,16 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Fetch and display Exa Search API data")
     parser.add_argument("--query", type=str, help="Search query to use")
-    parser.add_argument("--output", "-o", type=str, default="../results/search_results.txt", help="Output file to save results to")
-    parser.add_argument("--limit", "-l", type=int, default=MAX_ITEMS,
-                        help=f"Maximum number of results to display (default: {MAX_ITEMS})")
+    parser.add_argument(
+        "--output", "-o", type=str, default="../results/search_results.txt", help="Output file to save results to"
+    )
+    parser.add_argument(
+        "--limit",
+        "-l",
+        type=int,
+        default=MAX_ITEMS,
+        help=f"Maximum number of results to display (default: {MAX_ITEMS})",
+    )
     args = parser.parse_args()
 
     # Set up Exa client
@@ -252,6 +266,7 @@ def main():
 
     # Format and display results
     format_and_display_results(results, query, args.output)
+
 
 if __name__ == "__main__":
     main()
