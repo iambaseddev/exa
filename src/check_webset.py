@@ -17,7 +17,6 @@ from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
 from exa_py import Exa
-
 from src.utils.excel_export import json_to_excel
 
 
@@ -346,7 +345,7 @@ def format_and_save_results(
                 def default(self, obj):
                     try:
                         return str(obj)
-                    except:
+                    except Exception:
                         return "Non-serializable object"
 
             # Save to JSON file
@@ -446,7 +445,7 @@ def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = 
                     def default(self, obj):
                         try:
                             return str(obj)
-                        except:
+                        except Exception:
                             return "Non-serializable object"
 
                 json.dump(raw_data, f, indent=2, cls=CustomEncoder)

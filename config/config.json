@@ -1,7 +1,13 @@
 {
+    "externalId": "ICA-burnout-2025",
+    "metadata": {
+        "segment": "tech-lead-burnout",
+        "campaign": "May2025-Research"
+    },
     "search": {
-        "query": "female entrepreneur (founder, co-founder, or owner of a business) currently resides in the state of California",
-        "limit": 3
+        "query": "site:linkedin.com/in (engineer OR \"tech lead\" OR manager) AND (burnout OR mindfulness)",
+        "count": 5,
+        "entityType": "person"
     },
     "enrichments": [
         "Name",
@@ -9,6 +15,7 @@
         "Phone",
         "Location",
         "Company Name",
-        "Company Website"
+        "Company Website",
+        "Personalized outreach message"
     ]
 }

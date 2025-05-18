@@ -1,271 +1,201 @@
 #!/usr/bin/env python3
 """
-Exa API Script
+Exa Websets API Script
 
-This script fetches and displays specific details from the Exa API.
-It demonstrates how to:
-1. Authenticate with the Exa API
-2. Perform a search using the Exa Search API
-3. Format and display search results with specific fields
-4. Handle potential errors and edge cases
+This script uses the Exa Websets API to search for entrepreneurs in the USA
+and enrich the results with specific data points like contact information
+and company details.
 
 Usage:
     Make sure you have a .env file with your Exa API key:
     exa_api_key=your_api_key
 
     Run the script:
-    python webset_fetcher.py [--query "Your search query"]
-
-    The script will perform a search and display the results.
+    python exa_websets.py [--config config.json] [--output results.json]
 """
 
 import argparse
+import json
 import os
 import sys
-from typing import Any, Dict, List, Optional
+import time
 
 from dotenv import load_dotenv
 from exa_py import Exa
+from exa_py.websets.types import (
+    CreateEnrichmentParameters,
+    CreateWebsetParameters,
+    WebsetWebhookParameters,
+)
 
-from src.utils.excel_export import search_results_to_excel
+from src.utils.excel_export import json_to_excel
 
-# Maximum number of items to display
-MAX_ITEMS = 3
-
-# Default search query
-DEFAULT_SEARCH_QUERY = "Top AI research labs focusing on large language models"
-
-# API base URL - can be modified if the API endpoint changes
-API_BASE_URL = "https://api.exa.ai"
+# Default timeout for waiting for Webset processing (in seconds)
+TIMEOUT = 300  # 5 minutes
 
 
-def setup_exa_client() -> Optional[Exa]:
-    """
-    Set up and return an authenticated Exa client.
+def load_config(config_file: str) -> dict:
+    try:
+        with open(config_file, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+        print(f"Configuration loaded from {config_file}")
+        return cfg
+    except Exception as e:
+        print(f"Error loading configuration: {e}")
+        sys.exit(1)
 
-    Returns:
-        Exa: Authenticated Exa client or None if authentication fails
-    """
-    # Load environment variables from .env file
+
+def setup_exa_client() -> Exa:
     load_dotenv()
-
-    # Get API key from environment
     api_key = os.getenv("exa_api_key")
-
     if not api_key:
         print("Error: No API key found. Please set 'exa_api_key' in your .env file.")
-        return None
-
+        sys.exit(1)
     try:
-        # Initialize Exa client with API key and custom base URL if needed
         client = Exa(api_key)
-
-        # Optionally set a custom API base URL if the default doesn't work
-        # Uncomment the following line if needed:
-        # client.websets.base_url = API_BASE_URL
-
-        print(f"Exa client initialized successfully with API key: {api_key[:4]}...{api_key[-4:]}")
+        print(f"Exa client initialized with API key: {api_key[:4]}...{api_key[-4:]}")
         return client
     except Exception as e:
         print(f"Error initializing Exa client: {e}")
-        return None
+        sys.exit(1)
 
 
-def perform_search(exa_client: Exa, query: str) -> Optional[List[Dict[str, Any]]]:
-    """
-    Perform a search using the Exa Search API.
+def create_webset(exa_client: Exa, cfg: dict) -> str:
+    query = cfg["search"]["query"]
+    count = cfg["search"].get("count", cfg["search"].get("limit", 10))
+    entity_type = cfg["search"].get("entityType", "person")
+    external_id = cfg.get("externalId")
+    metadata = cfg.get("metadata", {})
 
-    Args:
-        exa_client: Authenticated Exa client
-        query: Search query
+    enrichments = []
+    for field in cfg.get("enrichments", []):
+        fmt = "text"
+        if field.lower() == "email":
+            fmt = "email"
+        elif field.lower() == "phone":
+            fmt = "phone"
+        description = f"Extract the {field} of the entrepreneur"
+        enrichments.append(CreateEnrichmentParameters(description=description, format=fmt))
 
-    Returns:
-        List: List of search results or None if search fails
-    """
-    try:
-        print(f"Performing search for: {query}")
+    params = CreateWebsetParameters(
+        search={"query": query, "count": count, "entity": {"type": entity_type}},
+        enrichments=enrichments,
+        externalId=external_id,
+        metadata=metadata,
+    )
 
-        # Perform the search with the specified query and limit
-        search_response = exa_client.search(
-            query=query,
-            num_results=MAX_ITEMS,
-            use_autoprompt=True,  # Enable autoprompt for better results
-            include_domains=None,  # No domain restrictions
-            exclude_domains=None,  # No domain exclusions
-            start_published_date=None,  # No date restrictions
-            end_published_date=None,
-        )
-
-        # Extract results from the response
-        search_results = search_response.results
-
-        if not search_results:
-            print("No search results found.")
-            return []
-
-        print(f"Found {len(search_results)} search results.")
-        return search_results
-    except Exception as e:
-        print(f"Error performing search: {e}")
-        return None
+    webset = exa_client.websets.create(params=params)
+    print(f"Webset created with ID: {webset.id}")
+    return webset.id
 
 
-def extract_metadata(result) -> Dict[str, Any]:
-    """
-    Extract metadata from a search result.
-
-    Args:
-        result: Search result object
-
-    Returns:
-        Dict: Extracted metadata
-    """
-    metadata = {}
-
-    # Extract basic metadata using attribute access
-    metadata["title"] = getattr(result, "title", "Unknown Title")
-    metadata["url"] = getattr(result, "url", "No URL")
-    metadata["published_date"] = getattr(result, "published_date", "Unknown Date")
-
-    # Extract text snippet
-    metadata["text"] = getattr(result, "text", "No text available")
-
-    # Extract author information
-    if hasattr(result, "author"):
-        metadata["author"] = result.author
-
-    # Extract other available metadata
-    for key in ["source", "score", "id"]:
-        if hasattr(result, key):
-            metadata[key] = getattr(result, key)
-
-    return metadata
+def register_webhook(exa_client: Exa, webset_id: str, webhook_url: str) -> None:
+    params = WebsetWebhookParameters(websetId=webset_id, url=webhook_url, events=["item.created", "item.enriched"])
+    hook = exa_client.websets.webhooks.create(params=params)
+    print(f"Webhook created with ID: {hook.id} → {webhook_url}")
 
 
-def format_and_display_results(results: List[Dict[str, Any]], query: str, output_file: Optional[str] = None) -> None:
-    """
-    Format and display search results with specific fields.
+def wait_for_webset_processing(exa_client: Exa, webset_id: str, timeout: int = TIMEOUT):
+    print("Waiting for webset processing...")
+    start = time.time()
+    while True:
+        webset = exa_client.websets.get(webset_id)
+        if webset.status == "idle":
+            print("Webset processing complete")
+            return webset
+        if time.time() - start > timeout:
+            print(f"Timeout after {timeout}s. Status: {webset.status}")
+            return webset
+        print(f"Current status: {webset.status}. Waiting...")
+        time.sleep(10)
 
-    Args:
-        results: List of search results to display
-        query: The search query used
-        output_file: Optional file path to save results to
-    """
-    if not results:
-        print("No results to display.")
-        return
 
-    # Prepare output lines
-    output_lines = []
-    output_lines.append("=" * 80)
-    output_lines.append(f"DISPLAYING TOP {len(results)} RESULTS FOR: {query}")
-    output_lines.append("=" * 80)
+def fetch_webset_items(exa_client: Exa, webset_id: str):
+    items_response = exa_client.websets.items.list(webset_id=webset_id)
+    items = items_response.data or []
+    print(f"Fetched {len(items)} items")
+    return items
 
-    for i, result in enumerate(results, 1):
+
+def format_and_save_results(items: list, output_file: str = None):
+    formatted = []
+    for item in items:
         try:
-            # Extract metadata from the result
-            metadata = extract_metadata(result)
+            res = {"id": item.id, "source": item.source, "webset_id": item.webset_id}
+            props = getattr(item, "properties", None)
+            if props:
+                if hasattr(props, "name"):
+                    res["name"] = props.name
+                if hasattr(props, "url"):
+                    res["url"] = str(props.url)
 
-            # Format result
-            output_lines.append(f"\nRESULT {i}:")
-            output_lines.append(f"Title: {metadata['title']}")
-            output_lines.append(f"URL: {metadata['url']}")
-
-            # Add publication date if available
-            if "published_date" in metadata and metadata["published_date"]:
-                output_lines.append(f"Published: {metadata['published_date']}")
-
-            # Add author if available
-            if "author" in metadata and metadata["author"]:
-                output_lines.append(f"Author: {metadata['author']}")
-
-            # Add source if available
-            if "source" in metadata and metadata["source"]:
-                output_lines.append(f"Source: {metadata['source']}")
-
-            # Add score if available
-            if "score" in metadata and metadata["score"]:
-                output_lines.append(f"Relevance Score: {metadata['score']}")
-
-            # Add text snippet
-            if "text" in metadata and metadata["text"]:
-                # Truncate text to a reasonable length
-                text = metadata["text"]
-                max_length = 300
-                if len(text) > max_length:
-                    text = text[:max_length] + "..."
-                output_lines.append(f"\nExcerpt: {text}")
-
-            output_lines.append("-" * 80)
+            enrich = {}
+            for enr in getattr(item, "enrichments", []):
+                val = enr.result
+                if not val:
+                    continue
+                if isinstance(val, list) and val:
+                    val = val[0]
+                fmt = getattr(enr, "format", "text")
+                if fmt == "email":
+                    enrich["Email"] = val
+                elif fmt == "phone":
+                    enrich["Phone"] = val
+                else:
+                    text = str(val)
+                    if "@" in text and "." in text:
+                        enrich["Email"] = text
+                    elif text.startswith("http"):
+                        enrich["Company Website"] = text
+                    else:
+                        field = enr.description.split("Extract the ")[-1].split(" ")[0]
+                        enrich[field] = text
+            if enrich:
+                res["enrichments"] = enrich
+            formatted.append(res)
         except Exception as e:
-            output_lines.append(f"Error displaying result {i}: {e}")
-            output_lines.append("-" * 80)
+            print(f"Error formatting item {item.id}: {e}")
 
-    # Join all lines
-    output_text = "\n".join(output_lines)
+    for i, res in enumerate(formatted, 1):
+        print(f"\nResult {i}:")
+        for k, v in res.items():
+            print(f"{k}: {v}")
 
-    # Print to console
-    print("\n" + output_text)
-
-    # Save to file if requested
     if output_file:
+        data = {"results": formatted}
+        with open(output_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        print(f"Results saved to {output_file}")
         try:
-            # Save to text file
-            with open(output_file, "w", encoding="utf-8") as f:
-                f.write(output_text)
-            print(f"\nResults saved to {output_file}")
-
-            # Save to Excel file
-            try:
-                # Extract metadata for Excel export
-                excel_data = [extract_metadata(result) for result in results]
-                excel_file = search_results_to_excel(excel_data, query, output_file)
-                if excel_file:
-                    print(f"Results also saved to Excel file: {excel_file}")
-            except Exception as e:
-                print(f"Error saving results to Excel file: {e}")
+            excel_file = json_to_excel(data, output_file)
+            print(f"Also saved as Excel: {excel_file}")
         except Exception as e:
-            print(f"Error saving results to file: {e}")
+            print(f"Excel export failed: {e}")
 
 
 def main():
-    """Main function to execute the script."""
-    global MAX_ITEMS
-
-    # Parse command-line arguments
-    parser = argparse.ArgumentParser(description="Fetch and display Exa Search API data")
-    parser.add_argument("--query", type=str, help="Search query to use")
-    parser.add_argument(
-        "--output", "-o", type=str, default="../results/search_results.txt", help="Output file to save results to"
-    )
-    parser.add_argument(
-        "--limit",
-        "-l",
-        type=int,
-        default=MAX_ITEMS,
-        help=f"Maximum number of results to display (default: {MAX_ITEMS})",
-    )
+    parser = argparse.ArgumentParser(description="Exa Websets ICA script")
+    parser.add_argument("--config", "-c", default="config.json")
+    parser.add_argument("--output", "-o", default="results.json")
+    parser.add_argument("--webset-id", help="Use existing webset ID")
+    parser.add_argument("--webhook-url", "-w", help="Webhook endpoint URL")
     args = parser.parse_args()
 
-    # Set up Exa client
+    cfg = load_config(args.config)
     exa_client = setup_exa_client()
-    if not exa_client:
-        sys.exit(1)
 
-    # Use provided query or default
-    query = args.query if args.query else DEFAULT_SEARCH_QUERY
+    if args.webset_id:
+        webset_id = args.webset_id
+        print(f"Using existing webset ID: {webset_id}")
+    else:
+        webset_id = create_webset(exa_client, cfg)
 
-    # Update MAX_ITEMS if limit is provided
-    if args.limit:
-        MAX_ITEMS = args.limit
+    if args.webhook_url:
+        register_webhook(exa_client, webset_id, args.webhook_url)
 
-    # Perform search
-    results = perform_search(exa_client, query)
-    if results is None:
-        sys.exit(1)
-
-    # Format and display results
-    format_and_display_results(results, query, args.output)
+    wait_for_webset_processing(exa_client, webset_id)
+    items = fetch_webset_items(exa_client, webset_id)
+    format_and_save_results(items, args.output)
 
 
 if __name__ == "__main__":
