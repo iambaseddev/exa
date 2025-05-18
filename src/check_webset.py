@@ -398,9 +398,8 @@ def inspect_raw_items(items: List[Dict[str, Any]], output_file: Optional[str] = 
             for j, enrichment in enumerate(item.enrichments, 1):
                 print(f"  Enrichment {j}:")
                 enrichment_attrs = dir(enrichment)
-                print(
-                    f"  Available attributes: {', '.join(attr for attr in enrichment_attrs if not attr.startswith('_'))}"
-                )
+                non_private_attrs = ", ".join(attr for attr in enrichment_attrs if not attr.startswith("_"))
+                print(f"  Available attributes: {non_private_attrs}")
 
                 # Print enrichment details
                 if hasattr(enrichment, "result"):
