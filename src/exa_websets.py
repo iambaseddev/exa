@@ -14,19 +14,22 @@ Usage:
     python exa_websets.py [--config config.json] [--output results.json]
 """
 
+import argparse
+import json
 import os
 import sys
-import json
 import time
-import argparse
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from dotenv import load_dotenv
 from exa_py import Exa
-from exa_py.websets.types import CreateWebsetParameters, CreateEnrichmentParameters
-from src.utils.excel_export import json_to_excel
+from exa_py.websets.types import CreateEnrichmentParameters, CreateWebsetParameters
+
+from utils.excel_export import json_to_excel
 
 # Default timeout for waiting for Webset processing (in seconds)
 TIMEOUT = 300  # 5 minutes
+
 
 def load_config(config_file: str) -> Dict[str, Any]:
     """
@@ -39,7 +42,7 @@ def load_config(config_file: str) -> Dict[str, Any]:
         Dict: Configuration data
     """
     try:
-        with open(config_file, 'r', encoding='utf-8') as f:
+        with open(config_file, "r", encoding="utf-8") as f:
             config = json.load(f)
         print(f"Configuration loaded from {config_file}")
         return config
@@ -49,17 +52,11 @@ def load_config(config_file: str) -> Dict[str, Any]:
         return {
             "search": {
                 "query": "entrepreneur (founder, co-founder, or owner of a business) currently resides in the usa",
-                "limit": 3
+                "limit": 3,
             },
-            "enrichments": [
-                "Name",
-                "Email",
-                "Phone",
-                "Location",
-                "Company Name",
-                "Company Website"
-            ]
+            "enrichments": ["Name", "Email", "Phone", "Location", "Company Name", "Company Website"],
         }
+
 
 def setup_exa_client() -> Optional[Exa]:
     """
@@ -71,11 +68,11 @@ def setup_exa_client() -> Optional[Exa]:
     # Load environment variables from .env file
     load_dotenv()
 
-    # Get API key from environment
-    api_key = os.getenv('exa_api_key')
+    # Get API key from environment - try both possible environment variable names
+    api_key = os.getenv("EXA_API_KEY") or os.getenv("exa_api_key")
 
     if not api_key:
-        print("Error: No API key found. Please set 'exa_api_key' in your .env file.")
+        print("Error: No API key found. Please set 'EXA_API_KEY' or 'exa_api_key' in your .env file.")
         return None
 
     try:
@@ -86,6 +83,7 @@ def setup_exa_client() -> Optional[Exa]:
     except Exception as e:
         print(f"Error initializing Exa client: {e}")
         return None
+
 
 def create_webset(exa_client: Exa, config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
@@ -144,10 +142,7 @@ def create_webset(exa_client: Exa, config: Dict[str, Any]) -> Optional[Dict[str,
         # Create a Webset with search parameters and enrichments
         webset = exa_client.websets.create(
             params=CreateWebsetParameters(
-                search={
-                    "query": search_query,
-                    "count": search_limit
-                },
+                search={"query": search_query, "count": search_limit},
                 enrichments=enrichments,
             )
         )
@@ -157,6 +152,7 @@ def create_webset(exa_client: Exa, config: Dict[str, Any]) -> Optional[Dict[str,
     except Exception as e:
         print(f"Error creating Webset: {e}")
         return None
+
 
 def wait_for_webset_processing(exa_client: Exa, webset_id: str, timeout: int = TIMEOUT) -> Optional[Dict[str, Any]]:
     """
@@ -194,6 +190,7 @@ def wait_for_webset_processing(exa_client: Exa, webset_id: str, timeout: int = T
         print(f"Error waiting for Webset: {e}")
         return None
 
+
 def fetch_webset_items(exa_client: Exa, webset_id: str) -> Optional[List[Dict[str, Any]]]:
     """
     Fetch items from a Webset.
@@ -219,7 +216,10 @@ def fetch_webset_items(exa_client: Exa, webset_id: str) -> Optional[List[Dict[st
         print(f"Error fetching Webset items: {e}")
         return None
 
-def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any], output_file: Optional[str] = None) -> None:
+
+def format_and_save_results(
+    items: List[Dict[str, Any]], config: Dict[str, Any], output_file: Optional[str] = None
+) -> None:
     """
     Format and save Webset items with specific fields.
 
@@ -238,11 +238,7 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
     for item in items:
         try:
             # Extract basic item information
-            result = {
-                "id": item.id,
-                "source": item.source,
-                "webset_id": item.webset_id
-            }
+            result = {"id": item.id, "source": item.source, "webset_id": item.webset_id}
 
             # Extract properties based on item type
             if hasattr(item, "properties"):
@@ -262,7 +258,7 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
                     "wenrich_cmaqsapcr00ctl00iq4gpyqo6": "Phone",
                     "wenrich_cmaqsapcr00cul00i3l2dfhq7": "Location",
                     "wenrich_cmaqsapcr00cvl00i5p9iokr4": "Company Name",
-                    "wenrich_cmaqsapcr00cwl00ij7q5v78o": "Company Website"
+                    "wenrich_cmaqsapcr00cwl00ij7q5v78o": "Company Website",
                 }
 
                 for enrichment in item.enrichments:
@@ -307,9 +303,9 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
             print(f"Error formatting item {item.id}: {e}")
 
     # Print formatted results
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print(f"FORMATTED RESULTS ({len(formatted_results)} items)")
-    print("="*80)
+    print("=" * 80)
 
     for i, result in enumerate(formatted_results, 1):
         print(f"\nRESULT {i}:")
@@ -326,7 +322,7 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
             for field, value in result["enrichments"].items():
                 print(f"  {field}: {value}")
 
-        print("-"*80)
+        print("-" * 80)
 
     # Save to file if requested
     if output_file:
@@ -351,7 +347,7 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
 
             # Save to JSON file
             json_data = {"results": json_results}
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(json_data, f, indent=2)
             print(f"\nResults saved to {output_file}")
 
@@ -365,12 +361,15 @@ def format_and_save_results(items: List[Dict[str, Any]], config: Dict[str, Any],
         except Exception as e:
             print(f"Error saving results to file: {e}")
 
+
 def main():
     """Main function to execute the script."""
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Fetch and display Exa Websets data")
-    parser.add_argument("--config", type=str, default="../config/config.json", help="Path to configuration file")
-    parser.add_argument("--output", "-o", type=str, default="../results/webset_results.json", help="Output file to save results to")
+    parser.add_argument("--config", type=str, default="config/config.json", help="Path to configuration file")
+    parser.add_argument(
+        "--output", "-o", type=str, default="results/webset_results.json", help="Output file to save results to"
+    )
     parser.add_argument("--webset-id", type=str, help="Use existing Webset ID instead of creating a new one")
     args = parser.parse_args()
 
@@ -406,5 +405,7 @@ def main():
     # Format and save results
     format_and_save_results(items, config, args.output)
 
+
 if __name__ == "__main__":
+    main()
     main()

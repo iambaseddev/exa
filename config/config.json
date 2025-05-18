@@ -1,11 +1,11 @@
 {
-    "externalId": "ICA-burnout-2025-May18-111023",
+    "externalId": "ICA-burnout-siliconvalley-May18",
     "metadata": {
         "segment": "tech-lead-burnout",
         "campaign": "May2025-Research"
     },
     "search": {
-        "query": "site:linkedin.com/in (engineer OR \"tech lead\" OR manager) AND (burnout OR mindfulness)",
+        "query": "site:linkedin.com/in (engineer OR \"tech lead\" OR manager) AND (burnout OR mindfulness) AND (\"silicon valley\" OR \"palo alto\" OR \"mountain view\" OR \"sunnyvale\" OR \"cupertino\" OR \"santa clara\" OR \"san jose\")",
         "count": 5,
         "entityType": "person"
     },
