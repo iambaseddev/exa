@@ -151,7 +151,11 @@ def format_and_save_results(items: list, output_file: str = None):
                     elif text.startswith("http"):
                         enrich["Company Website"] = text
                     else:
-                        field = enr.description.split("Extract the ")[-1].split(" ")[0]
+                        # Get field name from enrichmentId or assign a generic name
+                        if hasattr(enr, 'enrichmentId'):
+                            field = f"Field_{enr.enrichmentId[-6:]}"
+                        else:
+                            field = f"Field_{len(enrich)}"
                         enrich[field] = text
             if enrich:
                 res["enrichments"] = enrich

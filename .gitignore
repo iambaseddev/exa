@@ -28,3 +28,6 @@ build/
 .Trashes
 ehthumbs.db
 Thumbs.db
+results/test_fixed.xlsx
+results/test_fixed.json
+results/test_fixed.json
