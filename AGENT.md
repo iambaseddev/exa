@@ -1,6 +1,7 @@
 # Agent Guidelines for Exa API Scripts
 
 ## Commands
+use the virtual environment before running any commands
 
 ### Testing
 ```bash

@@ -25,7 +25,6 @@ from exa_py import Exa
 from exa_py.websets.types import (
     CreateEnrichmentParameters,
     CreateWebsetParameters,
-    WebsetWebhookParameters,
 )
 
 from src.utils.excel_export import json_to_excel
@@ -47,9 +46,9 @@ def load_config(config_file: str) -> dict:
 
 def setup_exa_client() -> Exa:
     load_dotenv()
-    api_key = os.getenv("exa_api_key")
+    api_key = os.getenv("EXA_API_KEY") or os.getenv("exa_api_key")
     if not api_key:
-        print("Error: No API key found. Please set 'exa_api_key' in your .env file.")
+        print("Error: No API key found. Please set 'EXA_API_KEY' in your .env file.")
         sys.exit(1)
     try:
         client = Exa(api_key)
@@ -90,8 +89,12 @@ def create_webset(exa_client: Exa, cfg: dict) -> str:
 
 
 def register_webhook(exa_client: Exa, webset_id: str, webhook_url: str) -> None:
-    params = WebsetWebhookParameters(websetId=webset_id, url=webhook_url, events=["item.created", "item.enriched"])
-    hook = exa_client.websets.webhooks.create(params=params)
+    params = {
+        "websetId": webset_id,
+        "url": webhook_url,
+        "events": ["item.created", "item.enriched"]
+    }
+    hook = exa_client.websets.webhooks.create(params)
     print(f"Webhook created with ID: {hook.id} → {webhook_url}")
 
 
